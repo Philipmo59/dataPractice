@@ -2,7 +2,7 @@ mapOfSamples = {
     "poolTubeName1":{
         sampleName: "poolTubeName1",
        reporterList: {
-        INFA: {},
+        reporter1: {},
         reporter2: {},
         reporter3: {},
         reporter4: {
