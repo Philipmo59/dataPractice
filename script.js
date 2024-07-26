@@ -21,42 +21,66 @@ function parseFile(event) {
     }})
 }
 
+/**
+ * 
+ * @param {string[][]} results 
+ * @returns 
+ */
 function makeObject(results) {
-    const mapOfSamples = new Map()
+    const samples = new Map()
     for (let i = 0; i < results.data.length; i++) {
         let selectedArray = results.data[i];
-        if(selectedArray.length >= 20 && !selectedArray.includes("Reporter")) {
-            if(mapOfSamples.has(selectedArray[3])){                                                  //If it has Key
-                const sampleProperties = mapOfSamples.get(selectedArray[3])
-                if(!sampleProperties.reporterList.has(selectedArray[4])){                            //If it does not have the Reporter name as a value
+        if(selectedArray.length >= 20 && !selectedArray.includes("Reporter")) {   
+            const sampleName = selectedArray[3]  
+            const ctValue = parseFloat(selectedArray[12])   
+            const reporterName = selectedArray[4]      
+
+            //If it has the sample name        
+            if(samples.has(sampleName)){                                                  
+                const sample = samples.get(sampleName)
+                
+                //If it does not have the Reporter name as a value
+                if(!sample.reporterList.has(reporterName)){                            
                     const reporterValueMap = new Map()
-                    reporterValueMap.set("values",[selectedArray[12]])
-                    sampleProperties.reporterList.set(selectedArray[4],reporterValueMap)             //Set the Reporter name as key, and the CT as the Value
+
+                    //Check if ctValue is undetermined, if it is, pass in an empty array
+                    if(isNumber(ctValue)) reporterValueMap.set("values",[ctValue])
+                    else reporterValueMap.set("values",[])
+                    sample.reporterList.set(reporterName,reporterValueMap)  
                 }
-                else{                                                                                //If it does have the Reporter name
-                    const reporterName = sampleProperties.reporterList.get(selectedArray[4]).get("values")
-                    reporterName.push(selectedArray[12])
+
+
+                else{                                                                                
+                    const ctValues = sample.reporterList.get(reporterName).get("values")
+                    if(isNumber(ctValue)) ctValues.push(ctValue)
                 }
             
             }
             else{
                 const reporterMapList = new Map()
-                const reporterValueMap = new Map([["values",[selectedArray[20]]]])
-                reporterMapList.set(selectedArray[4],reporterValueMap)
+                const reporterValueMap = new Map([["values",[ctValue]]])
+                reporterMapList.set(reporterName,reporterValueMap)
                 const sample = {
-                    name: selectedArray[3],
+                    name: sampleName,
                     reporterList: reporterMapList
                 }
-                mapOfSamples.set(selectedArray[3],sample)
+                samples.set(sampleName,sample)
             }
         }
         
     }
-    console.log(mapOfSamples)
-    return mapOfSamples
+    console.log(samples)
+    return samples
 }
-function checkIfNumber(ctValue){
-    if(ctValue == "Undetermined") return NaN
+
+/**
+ * 
+ * @param {number} ctValue 
+ * @returns {boolean}
+ */
+function isNumber(ctValue){
+    if(ctValue === NaN) return false
+    else return true
 }
 
 function getAverage(mapOfSamples){
